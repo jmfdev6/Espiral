@@ -1,19 +1,25 @@
 import 'package:espiral_app/src/widgets/calendar.dart';
 import 'package:flutter/material.dart';
-import '../../widgets/inputs/bottom_sheet.dart';
+import 'package:flutter_svg/svg.dart';
 
 final List<Widget> _pages = [
-  Calendar(),
+  const Calendar(),
   const Center(child: Text('Page 2')),
+  const Center(child: Text('Page 3')),
+
 ];
 final List<BottomNavigationBarItem> _navItems = [
   BottomNavigationBarItem(
-    icon: Icon(Icons.home),
-    label: 'home',
+    icon: SvgPicture.asset('assets/svg/bottom1.svg'),
+    label: '',
   ),
   BottomNavigationBarItem(
-    icon: Icon(Icons.menu),
-    label: 'mais',
+    icon: SvgPicture.asset('assets/svg/bottom2.svg'),
+    label: '',
+  ),
+    BottomNavigationBarItem(
+    icon: SvgPicture.asset('assets/svg/bottom3.svg'),
+    label: '',
   ),
 ];
 
@@ -26,54 +32,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  late Map<DateTime, List<Map<String, dynamic>>> _events;
-  DateTime _selectedDay = DateTime.now();
-
-  @override
-  void initState() {
-    super.initState();
-    _events = {};
-  }
-
-  void _addEvent(Map<String, dynamic> event) {
-    setState(() {
-      if (_events[_selectedDay] != null) {
-        _events[_selectedDay]!.add(event);
-      } else {
-        _events[_selectedDay] = [event];
-      }
-    });
-  }
-
-  void _removeEvent(DateTime date, int index) {
-    setState(() {
-      _events[date]!.removeAt(index);
-      if (_events[date]!.isEmpty) {
-        _events.remove(date);
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: _pages[_selectedIndex],
-        floatingActionButton: FloatingActionButton(
-          mini: true,
-          onPressed: () {
-            configurandoModalBottomSheet(context, (event) {
-              _addEvent(event);
-            });
-          },
-          child: const Icon(
-            Icons.add,
-            size: 24,
-          ),
+        appBar: AppBar(
+          leading: SvgPicture.asset('assets/svg/logo.svg'),
+          actions: [SvgPicture.asset('assets/svg/notifi.svg')],
         ),
-        floatingActionButtonLocation: MediaQuery.sizeOf(context).width < 600
-            ? FloatingActionButtonLocation.centerDocked
-            : FloatingActionButtonLocation.endFloat,
+        body: _pages[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _selectedIndex,
           selectedItemColor: Colors.purple,

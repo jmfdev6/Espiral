@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
-import 'package:espiral_app/src/controllers/calendar_controller.dart';
-
-import 'dialogs/event_detail.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class Calendar extends StatefulWidget {
   const Calendar({super.key});
@@ -14,100 +11,101 @@ class Calendar extends StatefulWidget {
 class _CalendarState extends State<Calendar> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        ValueListenableBuilder<Map<DateTime, List<Map<String, dynamic>>>>(
-          valueListenable: CalendarController.events,
-          builder: (context, events, child) {
-            return ValueListenableBuilder<DateTime>(
-              valueListenable: CalendarController.selectedDay,
-              builder: (context, selectedDay, child) {
-                return TableCalendar(
-                  calendarStyle: CalendarStyle(tablePadding: EdgeInsets.all(10)),
-                  focusedDay: selectedDay,
-                  selectedDayPredicate: (day) => isSameDay(selectedDay, day),
-                  eventLoader: (day) => events[day] ?? [],
-                  onDaySelected: (selectedDay, focusedDay) {
-                    CalendarController.selectedDay.value = selectedDay;
-                  },
-                  firstDay: DateTime.utc(2023),
-                  lastDay: DateTime.utc(2030),
-                  locale: 'pt_br',
-                  headerStyle: const HeaderStyle(
-                    titleCentered: true,
-                    formatButtonVisible: false,
-                  ),
-                );
-              },
-            );
-          },
-        ),
-        Expanded(
-          child: ValueListenableBuilder<DateTime>(
-            valueListenable: CalendarController.selectedDay,
-            builder: (context, selectedDay, child) {
-              final events = CalendarController.events.value[selectedDay] ?? [];
-              return ListView.builder(
-                itemCount: events.length,
-                itemBuilder: (context, index) {
-                  final event = events[index];
-                  return GestureDetector(
-                    child: Dismissible(
-                      key: Key(event['titulo']),
-                      onDismissed: (direction) {
-                        CalendarController.removeEvent(selectedDay, index);
-                      },
-                      child: Hero(
-                         tag: '${event['titulo']}-${selectedDay.toString()}',
-                        child: Material(
-                          type: MaterialType.transparency,
-                          child: ListTile(
-                            title: Text(event['titulo']),
-                          subtitle:Wrap(
-                          direction: Axis.vertical,
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              margin: EdgeInsets.only(left: 18, right: 18),
+              child: SearchBar(
+                leading: Icon(Icons.search),
+                hintText: "Para onde você deseja ir?",
+              ),
+            ),
+            SizedBox(height: 24),
+            ListTile(
+              title: Text("Qualidade do ar no seu bairro"),
+              subtitle: Row(
+                children: [
+                  Icon(Icons.shape_line_sharp),
+                  SizedBox(width: 5),
+                  Text("Centro, Campo Mourão (PR)")
+                ],
+              ),
+            ),
+            SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(50),
+                color: Color(0xFFEBEEF3),
+              ),
+              margin: EdgeInsets.symmetric(horizontal: 18),
+              height: MediaQuery.of(context).size.height * 0.3, // Ajuste de altura
+              child: SfCircularChart(
+                annotations: [
+                  CircularChartAnnotation(
+                    verticalAlignment: ChartAlignment.far,
+                    widget: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('30'),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            
-                            Row(
-                              children: [
-                                Icon(Icons.location_on_outlined),
-                            SizedBox(width: 2,),
-                                Text("${event['adress']}"),
-                              ],
-                            ),
-                            SizedBox(height: 10,),
-                                               Row(
-                          children: [
-                            Icon(Icons.schedule_outlined),
-                            SizedBox(width: 8,),
-                            Text(" ${event['inicio']}"),
-                            SizedBox(width: 8,),
-                            Text("${event['final']}"),
+                            Icon(Icons.emoji_emotions_outlined),
+                            SizedBox(width: 5),
+                            Text('Bom'),
                           ],
-                                               )
-                          ],
-                                              ),
-                         onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EventDetailScreen(
-                              event: event,
-                              selectedDay: selectedDay,
-                            ),
-                          ),
-                        );
-                      },
-                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                  CircularChartAnnotation(
+                    verticalAlignment: ChartAlignment.near,
+                    widget: Padding(
+                      padding: EdgeInsets.only(top: 18),
+                      child: Wrap(
+                        direction: Axis.vertical,
+                        children: [
+                          Text('Boa notícia! A qualidade do ar'),
+                          Text('deste bairro está boa'),
+                        ],
                       ),
                     ),
-                  );
-                },
-              );
-            },
-          ),
+                  ),
+                ],
+                series: <DoughnutSeries<_ChartData, String>>[
+                  DoughnutSeries<_ChartData, String>(
+                    dataSource: getChartData(),
+                    xValueMapper: (_ChartData data, _) => data.x,
+                    yValueMapper: (_ChartData data, _) => data.y,
+                    startAngle: 270,
+                    endAngle: 90,
+                    innerRadius: "90%",
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
+}
+
+List<_ChartData> getChartData() {
+  final List<_ChartData> chartData = [
+    _ChartData('Categoria1', 30),
+    _ChartData('Categoria1', 0),
+    _ChartData('Categoria1', 0),
+    _ChartData('Categoria1', 0),
+  ];
+  return chartData;
+}
+
+class _ChartData {
+  _ChartData(this.x, this.y);
+  final String x;
+  final double y;
 }
